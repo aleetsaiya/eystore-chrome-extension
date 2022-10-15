@@ -1,0 +1,33 @@
+body {
+  font-size: 16px;
+  color: #232629;
+}
+
+.content {
+  width: 15rem;
+  margin: 10px 15px;
+}
+
+.content > .controller > p {
+  line-height: 1.4;
+}
+
+.content > .controller > button {
+  display: flex;
+  align-items: center;
+  outline: none;
+  border: none;
+  font-size: 12px;
+  border-radius: 3px;
+  background-color: #0275d8;
+  color: #fff;
+  cursor: pointer;
+  padding: 5px 8px;
+}
+
+#search-icon {
+  filter: brightness(0) invert(1);
+  height: 10px;
+  width: 10px;
+  margin-right: 5px;
+}

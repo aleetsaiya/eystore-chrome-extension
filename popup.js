@@ -15,35 +15,66 @@ async function injectScript(tabId, func) {
   });
 }
 
-// get the selected text on the current tab
-async function getSelectedText(tabId) {
-  const [res] = await injectScript(tabId, () =>
-    window.getSelection().toString()
-  );
-  return res.result;
+function setStorage(data, callback) {
+  chrome.storage.sync.set({ key: data }, callback);
 }
 
-let selectedText;
-const searchBtn = document.getElementById("search");
-const controller = document.querySelector(".controller");
+function readStorage(callback) {
+  chrome.storage.sync.get(["key"], callback);
+}
 
-searchBtn.addEventListener("click", () => {
-  window.open(
-    `https://dictionary.cambridge.org/dictionary/english/${selectedText}`
-  );
-});
-
-// to execute when the popup is open
 window.onload = async () => {
-  const tab = await getCurrentTab();
-  // inject script function into current tab to get the current selected text
-  selectedText = await getSelectedText(tab.id);
-  // show the selected text on the extension page (popup.html)
-  const target = document.getElementById("selected-text");
-  if (selectedText.length !== 0) {
-    target.innerHTML = selectedText;
-  } else {
-    target.innerHTML = "No vocabulary being selected";
-    controller.style.display = "none";
-  }
+  const { id: tabId } = await getCurrentTab();
+  const showBtn = document.getElementById("show");
+
+  readStorage(function (result) {
+    const show = result?.key?.show;
+    if (show === true) {
+      showBtn.checked = true;
+    } else if (show === false) {
+      showBtn.checked = false;
+    }
+  });
+
+  showBtn.addEventListener("change", function (e) {
+    const showSidebar = e.target.checked;
+
+    // to show/hide sidebar
+    const toShowSidebar = function () {
+      const sidebar = document.getElementById("learning-extension-sidebar");
+      if (sidebar) sidebar.style.display = "block";
+    };
+
+    const toHideSidebar = function () {
+      const sidebar = document.getElementById("learning-extension-sidebar");
+      if (sidebar) sidebar.style.display = "none";
+    };
+
+    if (showSidebar) {
+      injectScript(tabId, toShowSidebar);
+      readStorage(function (result) {
+        const { key: d } = result;
+        const target = {
+          show: true,
+          data: d.data,
+        };
+
+        setStorage(target, function () {
+          console.log("Store complete", target);
+        });
+      });
+    } else {
+      injectScript(tabId, toHideSidebar);
+      readStorage(function (result) {
+        const { key: d } = result;
+        const target = {
+          show: false,
+          data: d.data,
+        };
+        setStorage(target, function () {
+          console.log("Store complete", target);
+        });
+      });
+    }
+  });
 };

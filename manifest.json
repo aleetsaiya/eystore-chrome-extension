@@ -11,5 +11,11 @@
       "js": ["content-style.js", "content.js"],
       "matches": ["<all_urls>"]
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/delete.png"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

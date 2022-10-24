@@ -5,9 +5,8 @@ function createElement(tag, id = "", className = "") {
   return element;
 }
 
-function setStorage(callback) {
-  // get vocabularies in storage
-  chrome.storage.sync.set(["key"], callback);
+function setStorage(data, callback) {
+  chrome.storage.sync.set({ key: data }, callback);
 }
 
 function readStorage(callback) {
@@ -20,7 +19,8 @@ function clearStorage() {
 
 class Select {
   constructor() {
-    this.selectedBtn = this.createSelectedBtn();
+    this.createSelectedBtn();
+    this.hideSelectedBtn();
   }
   // get the current selected text
   getSelectedText() {
@@ -36,10 +36,6 @@ class Select {
     };
   }
 
-  getSelectedBtn() {
-    return this.selectedBtn;
-  }
-
   selectedBtnStyle({ display = "none", left = 0, top = 0 }) {
     return `position:absolute;display:${display}; left: ${left - 27}px; top:${
       top - 27
@@ -47,9 +43,8 @@ class Select {
   }
 
   createSelectedBtn() {
-    const selectedBtn = createElement("button", "selected-btn");
-    selectedBtn.innerHTML = "+";
-    return selectedBtn;
+    this.selectedBtn = createElement("button", "selected-btn");
+    this.selectedBtn.innerHTML = "+";
   }
 
   showSelectedBtn() {
@@ -66,48 +61,69 @@ class Select {
 
 class Sidebar {
   constructor() {
-    this.sidebar = this.createSidebar();
-  }
-
-  getSidebar() {
-    return this.sidebar;
+    this.createSidebar();
   }
 
   createSidebar() {
-    const sidebar = createElement("div", "learning-extension-sidebar");
-    const closeBtn = createElement("button", "learning-extension-close-btn");
-    closeBtn.innerHTML = "X";
-    const ul = createElement("ul", "learning-extension-ul");
-    this.renderData(ul);
+    this.sidebar = createElement("div", "learning-extension-sidebar");
+    this.sidebar.style.display = "none";
 
-    sidebar.appendChild(closeBtn);
-    sidebar.appendChild(ul);
-    return sidebar;
+    readStorage(function (result) {
+      const data = result?.key?.data;
+      const target = {
+        show: false,
+        data: data || [],
+      };
+      setStorage(target, function () {
+        console.log("Store completed", target);
+      });
+    });
+
+    this.ul = createElement("ul", "learning-extension-ul");
+    this.renderData();
+    this.sidebar.appendChild(this.ul);
   }
 
-  renderData(ul) {
-    ul.innerHTML = "";
-    const callback = function (result) {
+  renderData() {
+    this.ul.innerHTML = "";
+    const callback = (result) => {
       const data = result?.key?.data || [];
 
       data.forEach((v) => {
         const item = createElement("li");
-        const text = createElement("div", "", "text");
+        const text = createElement("div", "", "learning-extension-text");
+        text.setAttribute("data-key", v.key);
         text.innerHTML = v.key;
 
-        const controls = createElement("div", "", "controls");
-        const btn1 = createElement("button");
-        btn1.innerHTML = "Search";
-        btn1.addEventListener("click", function () {
-          window.open(
-            `https://dictionary.cambridge.org/dictionary/english/${v.key}`
-          );
-        });
+        const controls = createElement(
+          "div",
+          "",
+          "learning-extension-controls"
+        );
+        const date = createElement("span", "", "learning-extension-date");
+        const d = new Date(v.date);
+        date.innerHTML = `${d.getFullYear()}/${d.getMonth()}/${d.getDate()}`;
+        const history = createElement("a", "", "learning-extension-history");
+        history.setAttribute("href", v.url);
+        history.setAttribute("target", "_blank");
+        history.innerHTML = "history";
 
-        controls.appendChild(btn1);
+        const dicon = createElement(
+          "img",
+          "",
+          "learning-extension-delete-icon"
+        );
+        const iconPath = chrome.runtime.getURL("./images/delete.png");
+        dicon.setAttribute("src", iconPath);
+        dicon.setAttribute("alt", "delete-icon");
+        dicon.setAttribute("data-key", v.key);
+
+        controls.appendChild(history);
+        controls.appendChild(date);
         item.appendChild(text);
         item.appendChild(controls);
-        ul.appendChild(item);
+        item.appendChild(dicon);
+        this.ul.appendChild(item);
       });
     };
 
@@ -122,8 +138,8 @@ window.onload = function () {
   const sidebar = new Sidebar();
 
   body.appendChild(createGlobalStyle());
-  body.appendChild(select.getSelectedBtn());
-  body.appendChild(sidebar.getSidebar());
+  body.appendChild(select.selectedBtn);
+  body.appendChild(sidebar.sidebar);
 
   // to avoid error in "detect click event twice" with document click and button click
   let closeFlag = false;
@@ -131,14 +147,43 @@ window.onload = function () {
   // when user select vocabulary
   document.addEventListener("click", () => {
     if (closeFlag) closeFlag = false;
-    else if (select.getSelectedText().length > 0) select.showSelectedBtn();
+    else if (
+      select.getSelectedText().length > 0 &&
+      select.getSelectedText().split(" ").length === 1
+    )
+      select.showSelectedBtn();
   });
 
   document.addEventListener("selectionchange", () => {
     if (select.getSelectedText().length === 0) select.hideSelectedBtn();
   });
 
-  select.getSelectedBtn().addEventListener("click", () => {
+  sidebar.ul.addEventListener("click", function (e) {
+    const target = e.target;
+    const { className } = target;
+    const { key } = target.dataset;
+    if (className === "learning-extension-text")
+      window.open(`https://dictionary.cambridge.org/dictionary/english/${key}`);
+    else if (className === "learning-extension-delete-icon") {
+      readStorage(function (result) {
+        const data = [...result.key.data];
+        const idx = data.findIndex((d) => d.key === key);
+        if (idx !== -1) {
+          data.splice(idx, 1);
+          const target = {
+            ...result.key,
+            data,
+          };
+          setStorage(target, function () {
+            console.log("Delete complete", target);
+            sidebar.renderData(sidebar.ul);
+          });
+        }
+      });
+    }
+  });
+
+  select.selectedBtn.addEventListener("click", () => {
     closeFlag = true;
     select.hideSelectedBtn();
 
@@ -149,44 +194,34 @@ window.onload = function () {
       date: Date.now(),
     };
 
-    const initStorageData = {
-      show: false,
-      data: [],
-    };
-
-    const callback = function (result) {
-      console.log("storage result", result);
+    readStorage(function (result) {
       const { key } = target;
-      const d = {
-        show: result?.key?.show || initStorageData.show,
-        data: [],
-      };
+      const { data } = result.key;
 
       // check if the current target is already in to storage
-      const data = result?.key?.data || [];
       const idx = data.findIndex((v) => v.key === key);
 
+      let da;
       if (idx === -1) {
-        d.data = [...data, target];
+        da = [...data, target];
       } else {
-        d.data = [...data];
-        d.data[idx].count += 1;
-        d.data[idx].date = Date.now();
+        da = [...data];
+        da[idx].count += 1;
+        da[idx].date = Date.now();
       }
 
       // sort value by date
-      d.data.sort((a, b) => b.date - a.date);
+      da.sort((a, b) => b.date - a.date);
 
-      const setStorageCallback = function () {
-        console.log("Store complete", d);
-        const ul = document.getElementById("learning-extension-ul");
-        sidebar.renderData(ul);
+      const d = {
+        show: result.key.show,
+        data: da,
       };
-
       // store data into storage
-      chrome.storage.sync.set({ key: d }, setStorageCallback);
-    };
-
-    readStorage(callback);
+      setStorage(d, function () {
+        console.log("Store complete", d);
+        sidebar.renderData(sidebar.ul);
+      });
+    });
   });
 };

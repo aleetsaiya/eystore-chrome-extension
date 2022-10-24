@@ -25,7 +25,10 @@ function readStorage(callback) {
 
 window.onload = async () => {
   const { id: tabId } = await getCurrentTab();
-  const showBtn = document.getElementById("show");
+  const label = document.querySelector("label.switch");
+  const showBtn = document.createElement("input");
+  showBtn.setAttribute("id", "show");
+  showBtn.setAttribute("type", "checkbox");
 
   readStorage(function (result) {
     const show = result?.key?.show;
@@ -35,6 +38,25 @@ window.onload = async () => {
       showBtn.checked = false;
     }
   });
+
+  label.insertBefore(showBtn, label.firstChild);
+
+  setTimeout(() => {
+    const transitionStyle = document.createElement("style");
+    transitionStyle.innerHTML = `
+    .slider {
+      -webkit-transition: 0.2s;
+      transition: 0.2s;
+    }
+  
+    .slider:before {
+      -webkit-transition: 0.2s;
+      transition: 0.2s;
+    }
+  `;
+    const body = document.querySelector("body");
+    body.appendChild(transitionStyle);
+  }, 500);
 
   showBtn.addEventListener("change", function (e) {
     const showSidebar = e.target.checked;

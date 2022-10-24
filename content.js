@@ -39,7 +39,7 @@ class Select {
   selectedBtnStyle({ display = "none", left = 0, top = 0 }) {
     return `position:absolute;display:${display}; left: ${left - 27}px; top:${
       top - 27
-    }px; width:22px; height:22px; outline:none; border: none; z-index: 10; border-radius: 3px; cursor:pointer; align-items: center; justify-content: center; background-color: #77c3ec; color:#fff;`;
+    }px; width:22px; height:22px; outline:none; border: none; z-index: 2147483647; border-radius: 3px; cursor:pointer; align-items: center; justify-content: center; background-color: #77c3ec; color:#fff;`;
   }
 
   createSelectedBtn() {
@@ -102,7 +102,9 @@ class Sidebar {
         );
         const date = createElement("span", "", "learning-extension-date");
         const d = new Date(v.date);
-        date.innerHTML = `${d.getFullYear()}/${d.getMonth()}/${d.getDate()}`;
+        date.innerHTML = `${d.getFullYear()}/${
+          d.getMonth() + 1
+        }/${d.getDate()}`;
         const history = createElement("a", "", "learning-extension-history");
         history.setAttribute("href", v.url);
         history.setAttribute("target", "_blank");

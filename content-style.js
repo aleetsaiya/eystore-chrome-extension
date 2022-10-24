@@ -12,7 +12,7 @@ function createGlobalStyle() {
         width: 250px;
         height: 100vh;
         overflow-y: scroll;
-        z-index: 99999;
+        z-index: 2147483647;
         color: #f7f7f7;
       }
 

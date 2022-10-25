@@ -1,21 +1,26 @@
 {
-  "name": "Learning English",
+  "name": "EyStore - Store your vocabulary",
   "version": "1",
   "manifest_version": 3,
-  "action": {
-    "default_popup": "popup.html"
-  },
   "permissions": ["tabs", "activeTab", "scripting", "storage"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "icons": { "128": "images/icon-128.png" },
+  "action": {
+    "default_icon": { "128": "images/icon-128.png" }
+  },
   "content_scripts": [
     {
       "js": ["content-style.js", "content.js"],
-      "matches": ["<all_urls>"]
+      "matches": ["https://*/*", "http://*/*"]
     }
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "web_accessible_resources": [
     {
       "resources": ["images/delete.png"],
-      "matches": ["<all_urls>"]
+      "matches": ["https://*/*", "http://*/*"]
     }
   ]
 }

@@ -67,18 +67,6 @@ class Sidebar {
   createSidebar() {
     this.sidebar = createElement("div", "learning-extension-sidebar");
     this.sidebar.style.display = "none";
-
-    readStorage(function (result) {
-      const data = result?.key?.data;
-      const target = {
-        show: false,
-        data: data || [],
-      };
-      setStorage(target, function () {
-        console.log("Store completed", target);
-      });
-    });
-
     this.ul = createElement("ul", "learning-extension-ul");
     this.renderData();
     this.sidebar.appendChild(this.ul);
@@ -133,13 +121,13 @@ class Sidebar {
   }
 }
 
-// add template to DOM
 window.onload = function () {
   const body = document.querySelector("body");
+  const head = document.querySelector("head");
   const select = new Select();
   const sidebar = new Sidebar();
 
-  body.appendChild(createGlobalStyle());
+  head.appendChild(createGlobalStyle());
   body.appendChild(select.selectedBtn);
   body.appendChild(sidebar.sidebar);
 

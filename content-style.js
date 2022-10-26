@@ -16,10 +16,23 @@ function createGlobalStyle() {
         color: #f7f7f7;
       }
 
+      #learning-extension-search {
+        box-sizing: border-box;
+        background-color: #f7f7f7;
+        width: 210px;
+        padding: 5px 8px;
+        margin: 20px 20px 10px 20px;
+        font-size: 15px;
+        color: #292b2c;
+        border: none;
+        border-radius: 3px;
+        outline: none;
+        height: 36px;
+      }
+
       #learning-extension-ul {
         padding: 0 20px;
         margin: 0;
-        margin-top: 20p20
       }
   
       #learning-extension-ul > li {
@@ -56,6 +69,9 @@ function createGlobalStyle() {
         min-height: 30px;
         cursor: pointer;
         display: inline-block;
+        max-width: 180px;
+        overflow-wrap: break-word; 
+
       }
 
       #learning-extension-ul > li > .learning-extension-text:hover {

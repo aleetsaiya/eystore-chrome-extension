@@ -6,15 +6,15 @@ function createElement(tag, id = "", className = "") {
 }
 
 function setStorage(data, callback) {
-  chrome.storage.sync.set({ key: data }, callback);
+  if (chrome.storage.sync) chrome.storage.sync.set({ key: data }, callback);
 }
 
 function readStorage(callback) {
-  chrome.storage.sync.get(["key"], callback);
+  if (chrome.storage.sync) chrome.storage.sync.get(["key"], callback);
 }
 
 function clearStorage() {
-  chrome.storage.sync.clear();
+  if (chrome.storage.sync) chrome.storage.sync.clear();
 }
 
 class Select {
@@ -39,18 +39,24 @@ class Select {
   selectedBtnStyle({ display = "none", left = 0, top = 0 }) {
     return `position:absolute;display:${display}; left: ${left - 27}px; top:${
       top - 27
-    }px; width:22px; height:22px; outline:none; border: none; z-index: 2147483647; border-radius: 3px; cursor:pointer; align-items: center; justify-content: center; background-color: #77c3ec; color:#fff;`;
+    }px; width:20px; height:20px; outline:none; border: none; z-index: 2147483647; cursor:pointer; background-color: white; border-radius: 50%;`;
   }
 
   createSelectedBtn() {
-    this.selectedBtn = createElement("button", "selected-btn");
-    this.selectedBtn.innerHTML = "+";
+    this.selectedBtn = createElement("img", "learning-extension-selected-btn");
+
+    const imgPath = chrome.runtime.getURL("./images/add.png");
+    this.selectedBtn.setAttribute("src", imgPath);
+    this.selectedBtn.setAttribute("alt", "add");
   }
 
   showSelectedBtn() {
     this.selectedBtn.setAttribute(
       "style",
-      this.selectedBtnStyle({ display: "flex", ...this.getSelectionPosition() })
+      this.selectedBtnStyle({
+        display: "block",
+        ...this.getSelectionPosition(),
+      })
     );
   }
 
@@ -67,15 +73,23 @@ class Sidebar {
   createSidebar() {
     this.sidebar = createElement("div", "learning-extension-sidebar");
     this.sidebar.style.display = "none";
+    this.searchBlock = createElement("input", "learning-extension-search");
+    this.searchBlock.setAttribute("type", "text");
+    this.searchBlock.setAttribute("placeholder", "Search ...");
+
     this.ul = createElement("ul", "learning-extension-ul");
     this.renderData();
+
+    this.sidebar.appendChild(this.searchBlock);
     this.sidebar.appendChild(this.ul);
   }
 
-  renderData() {
+  renderData(filter) {
     this.ul.innerHTML = "";
     const callback = (result) => {
-      const data = result?.key?.data || [];
+      let data = result?.key?.data || [];
+
+      if (filter) data = data.filter(filter);
 
       data.forEach((v) => {
         const item = createElement("li");
@@ -166,10 +180,19 @@ window.onload = function () {
           };
           setStorage(target, function () {
             console.log("Delete complete", target);
-            sidebar.renderData(sidebar.ul);
+            sidebar.renderData();
           });
         }
       });
+    }
+  });
+
+  sidebar.searchBlock.addEventListener("input", function (e) {
+    const value = e.target.value;
+    if (value.trim() === "") sidebar.renderData();
+    else {
+      const filter = (d) => d.key.toLowerCase().startsWith(value.toLowerCase());
+      sidebar.renderData(filter);
     }
   });
 
@@ -210,7 +233,7 @@ window.onload = function () {
       // store data into storage
       setStorage(d, function () {
         console.log("Store complete", d);
-        sidebar.renderData(sidebar.ul);
+        sidebar.renderData();
       });
     });
   });

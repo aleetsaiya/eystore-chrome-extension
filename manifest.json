@@ -19,8 +19,16 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/delete.png"],
+      "resources": ["images/delete.png", "images/add.png"],
       "matches": ["https://*/*", "http://*/*"]
     }
-  ]
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+U",
+        "mac": "Command+U"
+      }
+    }
+  }
 }

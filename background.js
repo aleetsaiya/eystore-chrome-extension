@@ -1,9 +1,9 @@
 function setStorage(data, callback) {
-  chrome.storage.sync.set({ key: data }, callback);
+  if (chrome.storage.sync) chrome.storage.sync.set({ key: data }, callback);
 }
 
 function readStorage(callback) {
-  chrome.storage.sync.get(["key"], callback);
+  if (chrome.storage.sync) chrome.storage.sync.get(["key"], callback);
 }
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {

@@ -19,7 +19,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     // Set the action badge to the current storage state
     await chrome.action.setBadgeText({
       tabId,
-      text: show ? "ON" : "OFF",
+      text: show ? "" : "OFF",
     });
     // Insert/Remove the hide style
     if (show === false)
@@ -49,7 +49,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
         console.log("insert style completed");
       });
 
-    console.log("Set badge text to", show ? "ON" : "OFF", "in update listener");
+    console.log("Set badge text to", show ? "" : "OFF", "in update listener");
   });
 });
 
@@ -75,6 +75,10 @@ chrome.runtime.onInstalled.addListener(async () => {
     text: "OFF",
   });
 
+  chrome.action.setBadgeBackgroundColor({
+    color: "#FFCCCB",
+  });
+
   // Initialize chrome storage data
   const initStorage = {
     show: false,
@@ -95,7 +99,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
 
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
-  const nextState = prevState === "ON" ? "OFF" : "ON";
+  const nextState = prevState === "" ? "OFF" : "";
 
   // Set the action badge to the next state
   await chrome.action.setBadgeText({
@@ -107,7 +111,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   readStorage(function (result) {
     const data = result?.key?.data || [];
     const target = {
-      show: nextState === "ON" ? true : false,
+      show: nextState === "" ? true : false,
       data,
     };
     setStorage(target, function () {
@@ -129,7 +133,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     ]).then(() => {
       console.log("insert style completed");
     });
-  else if (nextState === "ON")
+  else if (nextState === "")
     Promise.all([
       chrome.scripting.insertCSS({
         files: ["show.css"],

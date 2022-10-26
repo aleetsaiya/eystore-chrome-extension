@@ -154,8 +154,21 @@ window.onload = function () {
     else if (
       select.getSelectedText().length > 0 &&
       select.getSelectedText().split(" ").length === 1
-    )
-      select.showSelectedBtn();
+    ) {
+      let isEnglish = true;
+      const text = select.getSelectedText();
+      for (let t of text) {
+        if (
+          !(t >= "A" && t <= "Z") &&
+          !(t >= "a" && t <= "z") &&
+          !(t >= "0" && t <= "9")
+        ) {
+          isEnglish = false;
+          break;
+        }
+      }
+      isEnglish && select.showSelectedBtn();
+    }
   });
 
   document.addEventListener("selectionchange", () => {

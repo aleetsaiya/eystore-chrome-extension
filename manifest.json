@@ -1,6 +1,7 @@
 {
   "name": "EyStore - Store your vocabulary",
-  "version": "1",
+  "version": "1.0.0",
+  "description": "Provide a easy way to store English vocabulary while browsing websites",
   "manifest_version": 3,
   "permissions": ["tabs", "activeTab", "scripting", "storage"],
   "host_permissions": ["https://*/*", "http://*/*"],

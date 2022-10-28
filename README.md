@@ -1,4 +1,4 @@
-# extension-learning-english
+# etstore-chrome-extension
 
 A chrome extension to help users easily store vocabulary.
 
